@@ -29,6 +29,7 @@ filledRects = []
 inEdgeLastFrame = False
 sparcDamageBuff = 0
 QIXDamageBuff = 0
+frameCount = 0
 
 
 def whichEdge() -> str:
@@ -138,7 +139,11 @@ def addTrail(p) -> None:
     # coords are stored in tuples (x, y)
     # ignores duplicate coords
     if len(trailRects) <= 0 or not (trailRects[-1][0] == p.this.centerx and trailRects[-1][1] == p.this.centery):
-        trailRects.append((p.this.centerx, p.this.centery))
+        c = (p.this.centerx, p.this.centery)
+        if c in trailRects:
+            player.health -= 1
+
+        trailRects.append(c)
 
 def drawScene():
     #placeholders, will be switched for updateable entities
@@ -146,7 +151,7 @@ def drawScene():
 
     # health bar
     GAME_FONT.render_to(screen, (0, 0), "HEALTH", (255, 0, 0))
-    pg.draw.rect(screen, (255, 0, 0),(150, 10, 3 * screen_size[0] // 4 + 5, 10))
+    pg.draw.rect(screen, (255, 0, 0),(150, 10, (3 * screen_size[0] // 4 + 5) * (player.health/100), 10))
 
     pg.draw.rect(screen, PASTEL_CORAL, field.center)
     pg.draw.rect(screen, (255, 255, 255), field.edge, 10) 
@@ -303,7 +308,7 @@ while True:
     # Check for events
     for event in pg.event.get():
         # Check for the quit event
-        if event.type == QUIT or player.health <= 0:
+        if event.type == QUIT:
             # Quit the game
             pg.quit()
             exit()
@@ -350,6 +355,16 @@ while True:
     else:
         inEdgeLastFrame = False
 
+    # frameCount += 1
+    # if frameCount % 60 == 0:
+    #     print(f"player health is {player.health}")
+
+    if player.health <= 0:
+        trailRects = [(215, 445)]
+        filledRects = []
+        player.this.centerx = 215
+        player.this.centery = 445
+        player.health = 100
 
     updateEnemy()
     update(dx, dy)
